@@ -1,0 +1,79 @@
+####                                                            Flume学习
+
+##### 一、Flume介绍
+
+```
+	Flume 是一种分布式的、高可靠的、高可用的服务，用于高效收集、聚合和移动大量日志数据。它具有可调整的可靠性机制以及许多故障转移和恢复机制，具有健壮性和容错性。它使用一个简单的可扩展数据模型，允许在线分析应用程序。
+```
+
+架构图
+
+![1657115707522](C:\Users\86133\AppData\Roaming\Typora\typora-user-images\1657115707522.png)
+
+1.Agent：agent是一个JVM进程，主要由三部分组成：source（数据源头）、channel（传输缓冲区）、sink（数据目的地）
+
+2.source：source是负责接收数据到 Flume Agent 的组件。可以处理各种类型，格式的日志数据。包括avro、thrift、`exec`、jms、spooling directory、`netcat`、`taildir`、sequence generator、syslog、http、legacy。
+
+3.channel：channel 是位于source 和 sink 之间的缓冲区。Flume 自带两种channel：`Memory Channel `和 `File Channel`
+
+4.sink：sink不断的从channel 中抽取数据，并将这些数据批量写入到存储文件系统或被送往另一个 Flume Agent。Sink 组件目的地包括` hdfs`、`logger`（控制台）、avro、thrift、ipc、file、HBase、solr、自定义。
+
+5.event：Flume数据传输的基本单元，在Agent中传输的数据都是以 event 形式进行传输。event 由 Header 和 Body 两部分组成，header 用来存放 event 的一些属性，为K-V结构，Body 用来存放数据。
+
+![1657116381020](C:\Users\86133\AppData\Roaming\Typora\typora-user-images\1657116381020.png)
+
+##### 二、小Demo
+
+1.官网实例
+
+- 首先 在 flume 目录下创建一个 job 文件夹，用来存放后续任务文件
+
+```
+cd job
+vim netcat-to-logger.conf
+
+# netcat-to-logger.conf
+# 定义这个 agent 中各组件的名字  a1 == agent名字
+a1.sources = r1
+a1.sinks = k1
+a1.channels = c1
+
+# 描述和配置 source 组件：r1
+a1.sources.r1.type = netcat                # 
+a1.sources.r1.bind = localhost
+a1.sources.r1.port = 44444
+
+# 描述和配置 sink 组件：k1
+a1.sinks.k1.type = logger
+
+# 描述和配置 channel 组件，此处使用是内存缓存的方式
+a1.channels.c1.type = memory
+a1.channels.c1.capacity = 1000
+a1.channels.c1.transactionCapacity = 100
+
+# 描述和配置 source channel sink 之间的连接关系
+a1.sources.r1.channels = c1
+a1.sinks.k1.channel = c1
+```
+
+- 利用 nc 模拟创建一个客户端
+
+```
+yum -y install nc
+```
+
+- 启动 agent 采集数据
+
+```
+bin/flume-ng agent -n a1 -c conf/ -f job/netcat-to-logger.conf  -Dflume.root.logger=INFO,console
+```
+
+-n a1 指定我们这个 agent 的名字
+-c conf 指定 flume 自身的配置文件所在目录(如果没有特殊需要，这么一般为(conf)
+-f job/netcat-to-logger.conf 指定我们所描述的采集方案
+
+当 agent 启动时，开辟一个新窗口，输入 nc localhost 44444 开启客户端，即可开始采集日志数据信息。
+
+**上面小demo为官网实例，建议后续学习参考官网。**
+
+2.
