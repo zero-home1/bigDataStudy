@@ -4,6 +4,11 @@ import scala.collection.mutable.ArrayBuffer
 
 
 /* 数组 */
+
+/* 迭代器:不是一个集合，而是一种访问集合的方法
+* iterator.hasNext() 用于检测 集合中是否还存在数据
+* iterator.Next()  返回迭代器的下一个元素
+* */
 object ArrayCrud {
   def main(args: Array[String]): Unit = {
 // ####################### 不可变数组 #################################
@@ -43,8 +48,10 @@ object ArrayCrud {
     println(arr2.mkString("--"))
     println("=====================")
     // 方式5: 迭代器
-    for (elem <- arr2.iterator)
-      println(elem)
+    val it: Iterator[Int] = arr2.iterator
+      while (it.hasNext){
+        println(it.next())
+      }
 
     println("=====================")
     // 4. 不可变数组添加元素,添加完成后变成一个新的数组   :+ 在后面加   +: 在左边加

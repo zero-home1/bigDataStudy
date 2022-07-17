@@ -5,7 +5,7 @@ package day05
 object ClassAnonymous {
   def main(args: Array[String]): Unit = {
 
-    // 创建匿名子类
+    // 创建匿名子类,后面跟的时抽象类的内容,这个类是匿名的,只能使用一次
     val stu1 = new PersonAnnoyAbs {
       override val name: String = "killy"
 
